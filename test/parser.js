@@ -24,6 +24,74 @@ test('parser() should return nodes', t => {
   }])
 })
 
+test('parser() should return script tag content', t => {
+  const str = `<div>Hello world<script>console.log('Some inline text')</script></div>`
+  const tokens = lexer(str, lexerOptions)
+  const nodes = parser(tokens, parserOptions)
+
+  t.deepEqual(nodes, [{
+    type: 'element',
+    tagName: 'div',
+    attributes: [],
+    children: [{
+      type: 'text',
+      content: 'Hello world'
+    },
+    {
+      type: 'element',
+      tagName: 'script',
+      attributes: [],
+      children: [{
+        type: 'text',
+        content: `console.log('Some inline text')`
+      }]
+    }]
+  }])
+})
+
+test('parser() should return link rel stylsheet tag content', t => {
+  const str = `<div><link rel="stylesheet" href="/stylesheet.min.css?p43gzq" media="all" /></div>`
+  const tokens = lexer(str, lexerOptions)
+  const nodes = parser(tokens, parserOptions)
+
+  t.deepEqual(nodes, [{
+    type: 'element',
+    tagName: 'div',
+    attributes: [],
+    children: [{
+      type: 'element',
+      tagName: 'link',
+      attributes: [
+        `rel="stylesheet"`,
+        `href="/stylesheet.min.css?p43gzq"`,
+        `media="all"`
+      ],
+      children: []
+    }]
+  }])
+})
+
+test('parser() should return style tag content', t => {
+  const str = `<div><style>body {}</style></div>`
+  const tokens = lexer(str, lexerOptions)
+  const nodes = parser(tokens, parserOptions)
+
+  t.deepEqual(nodes, [{
+    type: 'element',
+    tagName: 'div',
+    attributes: [],
+    children: [{
+      type: 'element',
+      tagName: 'style',
+      attributes: [],
+      children: [{
+        content: 'body {}',
+        type: 'text'
+      }]
+    }]
+  }])
+})
+
 test('parser() should not nest within void tags', t => {
   const str = '<div>abc<img/>def</div>'
   const tokens = lexer(str, lexerOptions)

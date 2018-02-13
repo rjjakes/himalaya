@@ -93,3 +93,8 @@ Himalaya does not cut corners and returns an accurate representation of the HTML
 [First, my friends weren't helpful.](https://twitter.com/compooter/status/597908517132042240) Except Josh, Josh had my back.
 
 While I was testing the parser, I threw a download of my Twitter homepage in and got a giant JSON blob out. My code editor Sublime Text has a mini-map and looking at it sideways the data looked like a never-ending mountain range. Also, "himalaya" has H, M, L in it.
+
+## Credits
+
+- Original version by: https://github.com/andrejewski/himalaya
+- Attribute parser (`src/parse-attributes.js`) is a modified version of: https://github.com/switer/attribute-parser

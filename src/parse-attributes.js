@@ -1,3 +1,10 @@
+/**
+ * This is a heavilt modified version of:
+ * https://github.com/switer/attribute-parser
+ *
+ * @param str
+ * @returns {Array}
+ */
 export default function (str) {
   let attParts = str.split(/\s+/)
   let attSpaces = str.match(/\s+/gm)
@@ -48,11 +55,11 @@ export default function (str) {
       return attrs[withoutQuotes[1]]
     }
     // key only attribute
-    let ret = attrs[item.split('=')[0]] = ''
+    let ret = attrs[item.split('=')[0]] = true
     return ret
   })
   if (openAttr) {
-    console.warn(`Unclosed attribute: ${openAttr.open}`)
+    // console.warn(`Unclosed attribute: ${openAttr.open}`)
   }
 
   // Now split into key/value pairs.

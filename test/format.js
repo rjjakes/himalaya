@@ -1,19 +1,5 @@
 import test from 'ava'
 import {parse, parseDefaults} from '../'
-import {formatAttributes} from '../lib/format'
-
-test('formatAttributes() should return a key-value array', t => {
-  const attributes = [
-    'foo="bar"',
-    'disabled',
-    'cake=\'man\''
-  ]
-  t.deepEqual(formatAttributes(attributes), [
-    {key: 'foo', value: 'bar'},
-    {key: 'disabled', value: null},
-    {key: 'cake', value: 'man'}
-  ])
-})
 
 /*
 These tests ensure the parser and v1 formatting align.
@@ -56,7 +42,7 @@ test('parse() should work for mixed attributes', t => {
       tagName: 'b',
       attributes: [{
         key: 'disabled',
-        value: null
+        value: true
       }],
       children: [{
         type: 'text',

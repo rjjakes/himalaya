@@ -62,9 +62,18 @@ test('parser() should return link rel stylsheet tag content', t => {
       type: 'element',
       tagName: 'link',
       attributes: [
-        `rel="stylesheet"`,
-        `href="/stylesheet.min.css?p43gzq"`,
-        `media="all"`
+        {
+          key: 'rel',
+          value: 'stylesheet'
+        },
+        {
+          key: 'href',
+          value: '/stylesheet.min.css?p43gzq'
+        },
+        {
+          key: 'media',
+          value: 'all'
+        }
       ],
       children: []
     }]
@@ -231,9 +240,18 @@ test('parser() should report the element attributes', t => {
     type: 'element',
     tagName: 'div',
     attributes: [
-      'class="cake"',
-      'data-key="abc"',
-      'disabled'
+      {
+        'key': 'class',
+        'value': 'cake'
+      },
+      {
+        key: 'data-key',
+        value: 'abc'
+      },
+      {
+        key: 'disabled',
+        value: true
+      }
     ],
     children: []
   }])

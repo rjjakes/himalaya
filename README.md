@@ -88,18 +88,6 @@ Himalaya handles a lot of HTML's fringe cases, like:
 ### Preserves Whitespace
 Himalaya does not cut corners and returns an accurate representation of the HTML supplied. To remove whitespace, post-process the JSON; check out [an example script](https://gist.github.com/andrejewski/773487d4f4a46b16865405d7b74eabf9).
 
-## Going back to HTML
-Himalaya provides a `stringify` method. The following example parses the HTML to JSON then parses the JSON back into HTML.
-
-```js
-import fs from 'fs'
-import {parse, stringify} from 'himalaya'
-
-const html = fs.readFileSync('/webpage.html', {encoding: 'utf8'})
-const json = parse(html)
-fs.writeFileSync('/webpage.html', stringify(json))
-```
-
 ## Why "Himalaya"?
 
 [First, my friends weren't helpful.](https://twitter.com/compooter/status/597908517132042240) Except Josh, Josh had my back.

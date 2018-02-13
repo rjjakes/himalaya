@@ -60,7 +60,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.splitHead = splitHead;
 exports.unquote = unquote;
 exports.format = format;
-exports.formatAttributes = formatAttributes;
 function splitHead(str, sep) {
   var idx = str.indexOf(sep);
   if (idx === -1) return [str];
@@ -82,21 +81,12 @@ function format(nodes) {
     var type = node.type;
     if (type === 'element') {
       var tagName = node.tagName.toLowerCase();
-      var attributes = formatAttributes(node.attributes);
+      var attributes = node.attributes;
       var children = format(node.children);
       return { type: type, tagName: tagName, attributes: attributes, children: children };
     }
 
     return { type: type, content: node.content };
-  });
-}
-
-function formatAttributes(attributes) {
-  return attributes.map(function (attribute) {
-    var parts = splitHead(attribute.trim(), '=');
-    var key = parts[0];
-    var value = typeof parts[1] === 'string' ? unquote(parts[1]) : null;
-    return { key: key, value: value };
   });
 }
 
@@ -108,7 +98,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.parseDefaults = undefined;
 exports.parse = parse;
-exports.stringify = stringify;
 
 var _lexer = require('./lexer');
 
@@ -119,8 +108,6 @@ var _parser = require('./parser');
 var _parser2 = _interopRequireDefault(_parser);
 
 var _format = require('./format');
-
-var _stringify = require('./stringify');
 
 var _tags = require('./tags');
 
@@ -141,13 +128,7 @@ function parse(str) {
   return (0, _format.format)(nodes, options);
 }
 
-function stringify(ast) {
-  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : parseDefaults;
-
-  return (0, _stringify.toHTML)(ast, options);
-}
-
-},{"./format":2,"./lexer":4,"./parser":5,"./stringify":6,"./tags":7}],4:[function(require,module,exports){
+},{"./format":2,"./lexer":4,"./parser":6,"./tags":7}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -437,11 +418,123 @@ function lexSkipTag(tagName, state) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+exports.default = function (str) {
+  var attParts = str.split(/\s+/);
+  var attSpaces = str.match(/\s+/gm);
+  var attrs = {};
+  var openAttr = void 0;
+
+  attParts.forEach(function (item, index) {
+    if (!item) return;
+    if (openAttr) {
+      var space = attSpaces[index - 1];
+      item = openAttr.open + space + item;
+      if (openAttr.close.test(item)) {
+        openAttr = null;
+        var attMatches = item.match(/^([^\s=]*?)=['"]([\s\S]*?)['"]$/m);
+        attrs[attMatches[1]] = attMatches[2];
+        return attrs[attMatches[1]];
+      } else {
+        openAttr.open = item;
+        return openAttr.open;
+      }
+    }
+
+    var quotes = item.match(/^([^\s=]*?)=('|")([\s\S]*)$/m);
+    if (quotes) {
+      var reg = void 0;
+      switch (quotes[2]) {
+        case '"':
+          reg = /"$/;
+          break;
+        case '\'':
+          reg = /'$/;
+          break;
+      }
+      if (reg.test(item) && !/^[^\s=]*?=['"]$/m.test(item)) {
+        attrs[quotes[1]] = quotes[3].replace(reg, '');
+        return attrs[quotes[1]];
+      } else {
+        openAttr = {
+          open: item,
+          close: reg
+        };
+        return openAttr;
+      }
+    }
+    var withoutQuotes = item.match(/^([^\s=]*?)=([\s\S]*?)$/m);
+    if (withoutQuotes) {
+      attrs[withoutQuotes[1]] = withoutQuotes[2] || '';
+      return attrs[withoutQuotes[1]];
+    }
+    // key only attribute
+    var ret = attrs[item.split('=')[0]] = '';
+    return ret;
+  });
+  if (openAttr) {
+    console.warn('Unclosed attribute: ' + openAttr.open);
+  }
+
+  // Now split into key/value pairs.
+  var pairedAttributes = [];
+
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = Object.entries(attrs)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _step$value = _slicedToArray(_step.value, 2),
+          key = _step$value[0],
+          value = _step$value[1];
+
+      // Repeatdly overwrite the same object as we're only expecting one result.
+      pairedAttributes = {
+        key: key,
+        value: value
+      };
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  return pairedAttributes;
+};
+
+},{}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 exports.default = parser;
 exports.hasTerminalParent = hasTerminalParent;
 exports.parse = parse;
 
+var _parseAttributes = require('./parse-attributes');
+
+var _parseAttributes2 = _interopRequireDefault(_parseAttributes);
+
 var _compat = require('./compat');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function parser(tokens, options) {
   var root = { tagName: null, children: [] };
@@ -529,7 +622,15 @@ function parse(state) {
     while (cursor < len) {
       attrToken = tokens[cursor];
       if (attrToken.type === 'tag-end') break;
-      attributes.push(attrToken.content);
+
+      // Parse the attribute partial string.
+      var attributeObject = (0, _parseAttributes2.default)(attrToken.content);
+
+      // Only add to the attributes object if it was a valid attribute string partial.
+      if ((typeof attributeObject === 'undefined' ? 'undefined' : _typeof(attributeObject)) === 'object' && Object.keys(attributeObject).length !== 0) {
+        attributes.push(attributeObject);
+      }
+
       cursor++;
     }
 
@@ -553,51 +654,7 @@ function parse(state) {
   state.cursor = cursor;
 }
 
-},{"./compat":1}],6:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.formatAttributes = formatAttributes;
-exports.toHTML = toHTML;
-
-var _compat = require('./compat');
-
-function formatAttributes(attributes) {
-  return attributes.reduce(function (attrs, attribute) {
-    var key = attribute.key,
-        value = attribute.value;
-
-    if (value === null) {
-      return attrs + ' ' + key;
-    }
-    var quoteEscape = value.indexOf('\'') !== -1;
-    var quote = quoteEscape ? '"' : '\'';
-    return attrs + ' ' + key + '=' + quote + value + quote;
-  }, '');
-}
-
-function toHTML(tree, options) {
-  return tree.map(function (node) {
-    if (node.type === 'text') {
-      return node.content;
-    }
-    if (node.type === 'comment') {
-      return '<!--' + node.content + '-->';
-    }
-    var tagName = node.tagName,
-        attributes = node.attributes,
-        children = node.children;
-
-    var isSelfClosing = (0, _compat.arrayIncludes)(options.voidTags, tagName.toLowerCase());
-    return isSelfClosing ? '<' + tagName + formatAttributes(attributes) + '>' : '<' + tagName + formatAttributes(attributes) + '>' + toHTML(children, options) + '</' + tagName + '>';
-  }).join('');
-}
-
-exports.default = { toHTML: toHTML };
-
-},{"./compat":1}],7:[function(require,module,exports){
+},{"./compat":1,"./parse-attributes":5}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -631,13 +688,12 @@ var closingTagAncestorBreakers = exports.closingTagAncestorBreakers = {
   tfoot: ['table'],
   tr: ['table'],
   td: ['table']
-};
 
-/*
-  Tags which do not need the closing tag
-  For example: <img> does not need </img>
-*/
-var voidTags = exports.voidTags = ['!doctype', 'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+  /*
+    Tags which do not need the closing tag
+    For example: <img> does not need </img>
+  */
+};var voidTags = exports.voidTags = ['!doctype', 'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 
 },{}]},{},[3])(3)
 });

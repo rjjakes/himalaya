@@ -1,3 +1,4 @@
+import AttParser from './parse-attributes'
 import {arrayIncludes} from './compat'
 
 export default function parser (tokens, options) {
@@ -82,7 +83,15 @@ export function parse (state) {
     while (cursor < len) {
       attrToken = tokens[cursor]
       if (attrToken.type === 'tag-end') break
-      attributes.push(attrToken.content)
+
+      // Parse the attribute partial string.
+      let attributeObject = AttParser(attrToken.content)
+
+      // Only add to the attributes object if it was a valid attribute string partial.
+      if (typeof attributeObject === 'object' && Object.keys(attributeObject).length !== 0) {
+        attributes.push(attributeObject)
+      }
+
       cursor++
     }
 

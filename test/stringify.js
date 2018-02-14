@@ -26,6 +26,11 @@ test('stringify() should build the class attribute properly', t => {
   t.is(stringify(parse(elem)), elem)
 })
 
+test('stringify() should build attribute with no values correctly', t => {
+  const elem = "<div class='blue' disabled></div>"
+  t.is(stringify(parse(elem)), elem)
+})
+
 test('stringify() should build data-* attributes properly', t => {
   const elem = "<div data-one='5' data-two='five'></div>"
   t.is(stringify(parse(elem)), elem)

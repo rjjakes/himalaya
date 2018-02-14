@@ -12,7 +12,7 @@ export function formatAttributes (attributes) {
   }, '')
 }
 
-export function toHTML (tree, options) {
+export function toHTML (tree, options, elementCallback) {
   return tree.map(node => {
     if (node.type === 'text') {
       return node.content

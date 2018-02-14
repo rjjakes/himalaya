@@ -42,7 +42,7 @@ test('parse() should work for mixed attributes', t => {
       tagName: 'b',
       attributes: [{
         key: 'disabled',
-        value: true
+        value: null
       }],
       children: [{
         type: 'text',

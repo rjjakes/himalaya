@@ -80,7 +80,7 @@ function format(nodes) {
   return nodes.map(function (node) {
     var type = node.type;
     if (type === 'element') {
-      var tagName = node.tagName.toLowerCase();
+      var tagName = node.tagName; // .toLowerCase()
       var attributes = node.attributes;
       var children = format(node.children);
       return { type: type, tagName: tagName, attributes: attributes, children: children };
@@ -133,8 +133,9 @@ function parse(str) {
 
 function stringify(ast) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : parseDefaults;
+  var elementCallback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
-  return (0, _stringify.toHTML)(ast, options);
+  return (0, _stringify.toHTML)(ast, options, elementCallback);
 }
 
 },{"./format":2,"./lexer":4,"./parser":6,"./stringify":7,"./tags":8}],4:[function(require,module,exports){
@@ -487,7 +488,7 @@ exports.default = function (str) {
       return attrs[withoutQuotes[1]];
     }
     // key only attribute
-    var ret = attrs[item.split('=')[0]] = true;
+    var ret = attrs[item.split('=')[0]] = null;
     return ret;
   });
   if (openAttr) {}
@@ -695,7 +696,7 @@ function formatAttributes(attributes) {
   }, '');
 }
 
-function toHTML(tree, options) {
+function toHTML(tree, options, elementCallback) {
   return tree.map(function (node) {
     if (node.type === 'text') {
       return node.content;

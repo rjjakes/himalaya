@@ -18,7 +18,7 @@ export function format (nodes) {
   return nodes.map(node => {
     const type = node.type
     if (type === 'element') {
-      const tagName = node.tagName.toLowerCase()
+      const tagName = node.tagName  // .toLowerCase()
       const attributes = node.attributes
       const children = format(node.children)
       return {type, tagName, attributes, children}

@@ -55,7 +55,7 @@ export default function (str) {
       return attrs[withoutQuotes[1]]
     }
     // key only attribute
-    let ret = attrs[item.split('=')[0]] = true
+    let ret = attrs[item.split('=')[0]] = null
     return ret
   })
   if (openAttr) {

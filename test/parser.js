@@ -1,6 +1,7 @@
 import test from 'ava'
 import parser from '../lib/parser'
 import lexer from '../lib/lexer'
+import {parse} from '../lib'
 
 const lexerOptions = {childlessTags: []}
 const parserOptions = {
@@ -11,8 +12,7 @@ const parserOptions = {
 
 test('parser() should return nodes', t => {
   const str = '<h1>Hello world</h1>'
-  const tokens = lexer(str, lexerOptions)
-  const nodes = parser(tokens, parserOptions)
+  const nodes = parse(str)
   t.deepEqual(nodes, [{
     type: 'element',
     tagName: 'h1',
@@ -26,8 +26,7 @@ test('parser() should return nodes', t => {
 
 test('parser() should return script tag content', t => {
   const str = `<div>Hello world<script>console.log('Some inline text')</script></div>`
-  const tokens = lexer(str, lexerOptions)
-  const nodes = parser(tokens, parserOptions)
+  const nodes = parse(str)
 
   t.deepEqual(nodes, [{
     type: 'element',
@@ -51,8 +50,7 @@ test('parser() should return script tag content', t => {
 
 test('parser() should return link rel stylsheet tag content', t => {
   const str = `<div><link rel="stylesheet" href="/stylesheet.min.css?p43gzq" media="all" /></div>`
-  const tokens = lexer(str, lexerOptions)
-  const nodes = parser(tokens, parserOptions)
+  const nodes = parse(str)
 
   t.deepEqual(nodes, [{
     type: 'element',
@@ -82,8 +80,7 @@ test('parser() should return link rel stylsheet tag content', t => {
 
 test('parser() should return style tag content', t => {
   const str = `<div><style>body {}</style></div>`
-  const tokens = lexer(str, lexerOptions)
-  const nodes = parser(tokens, parserOptions)
+  const nodes = parse(str)
 
   t.deepEqual(nodes, [{
     type: 'element',
@@ -103,8 +100,8 @@ test('parser() should return style tag content', t => {
 
 test('parser() should not nest within void tags', t => {
   const str = '<div>abc<img/>def</div>'
-  const tokens = lexer(str, lexerOptions)
-  const nodes = parser(tokens, {voidTags: 'img', closingTags: []})
+  const nodes = parse(str)
+
   t.deepEqual(nodes, [{
     type: 'element',
     tagName: 'div',
@@ -126,14 +123,9 @@ test('parser() should not nest within void tags', t => {
 
 test('parser() should handle optional-close tags', t => {
   {
-    const parserOptions = {
-      voidTags: [],
-      closingTags: ['p'],
-      closingTagAncestorBreakers: {}
-    }
     const str = '<p>This is one<p>This is two</p>'
-    const tokens = lexer(str, lexerOptions)
-    const nodes = parser(tokens, parserOptions)
+    const nodes = parse(str)
+
     t.deepEqual(nodes, [{
       type: 'element',
       tagName: 'p',
@@ -154,14 +146,9 @@ test('parser() should handle optional-close tags', t => {
   }
 
   {
-    const parserOptions = {
-      voidTags: [],
-      closingTags: ['p', 'span'],
-      closingTagAncestorBreakers: {}
-    }
     const str = '<p>This is one <span>okay<p>This is two</p>'
-    const tokens = lexer(str, lexerOptions)
-    const nodes = parser(tokens, parserOptions)
+    const nodes = parse(str)
+
     t.deepEqual(nodes, [{
       type: 'element',
       tagName: 'p',
@@ -191,14 +178,9 @@ test('parser() should handle optional-close tags', t => {
 })
 
 test('parser() should auto-close unmatched child tags', t => {
-  const parserOptions = {
-    voidTags: [],
-    closingTags: [],
-    closingTagAncestorBreakers: {}
-  }
   const str = '<div>This is <b>one <span>okay</div>'
-  const tokens = lexer(str, lexerOptions)
-  const nodes = parser(tokens, parserOptions)
+  const nodes = parse(str)
+
   t.deepEqual(nodes, [{
     type: 'element',
     tagName: 'div',
@@ -234,8 +216,7 @@ test('parser() should handle empty token arrays', t => {
 
 test('parser() should report the element attributes', t => {
   const str = '<div class="cake" data-key="abc" disabled></div>'
-  const tokens = lexer(str, lexerOptions)
-  const nodes = parser(tokens, parserOptions)
+  const nodes = parse(str)
   t.deepEqual(nodes, [{
     type: 'element',
     tagName: 'div',
@@ -250,7 +231,7 @@ test('parser() should report the element attributes', t => {
       },
       {
         key: 'disabled',
-        value: true
+        value: null
       }
     ],
     children: []
@@ -259,8 +240,8 @@ test('parser() should report the element attributes', t => {
 
 test('parser() should handle unclosed elements', t => {
   const str = '<div>abc'
-  const tokens = lexer(str, lexerOptions)
-  const nodes = parser(tokens, parserOptions)
+  const nodes = parse(str)
+
   t.deepEqual(nodes, [{
     type: 'element',
     tagName: 'div',
@@ -274,8 +255,8 @@ test('parser() should handle unclosed elements', t => {
 
 test('parser() should preserve case-sensitive tag names', t => {
   const str = '<You-Know-8>'
-  const tokens = lexer(str, lexerOptions)
-  const nodes = parser(tokens, parserOptions)
+  const nodes = parse(str)
+
   t.deepEqual(nodes, [{
     type: 'element',
     tagName: 'You-Know-8',
@@ -286,8 +267,8 @@ test('parser() should preserve case-sensitive tag names', t => {
 
 test('parser() should match by case-insensitive tags', t => {
   const str = '<div>abc</DIV>def'
-  const tokens = lexer(str, lexerOptions)
-  const nodes = parser(tokens, parserOptions)
+  const nodes = parse(str)
+
   t.deepEqual(nodes, [{
     type: 'element',
     tagName: 'div',

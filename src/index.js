@@ -22,6 +22,6 @@ export function parse (str, options = parseDefaults) {
   return format(nodes, options)
 }
 
-export function stringify (ast, options = parseDefaults) {
-  return toHTML(ast, options)
+export function stringify (ast, options = parseDefaults, elementCallback = null) {
+  return toHTML(ast, options, elementCallback)
 }

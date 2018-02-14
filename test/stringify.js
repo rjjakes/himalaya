@@ -13,6 +13,17 @@ test('stringify() should handle simple conversions', t => {
   t.is(stringify(parse(str3)), str3)
 })
 
+test('stringify() should process a passed callback', t => {
+  const str1 = '<div>some text</div>'
+
+  t.is(stringify(parse(str1), parse.parseDefaults, function (node) {
+    node.attributes.push({
+      key: 'data-something',
+      value: 'someval'
+    })
+  }), "<div data-something='someval'>some text</div>")
+})
+
 test('stringify() should work for void elements', t => {
   const meta = "<meta charset='utf8'>"
   t.is(stringify(parse(meta)), meta)

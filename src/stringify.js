@@ -14,6 +14,11 @@ export function formatAttributes (attributes) {
 
 export function toHTML (tree, options, elementCallback) {
   return tree.map(node => {
+    // Process the object node before it gets turned into HTML.
+    if (typeof elementCallback === 'function') {
+      elementCallback(node)
+    }
+
     if (node.type === 'text') {
       return node.content
     }

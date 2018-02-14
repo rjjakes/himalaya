@@ -665,6 +665,11 @@ function formatAttributes(attributes) {
 
 function toHTML(tree, options, elementCallback) {
   return tree.map(function (node) {
+    // Process the object node before it gets turned into HTML.
+    if (typeof elementCallback === 'function') {
+      elementCallback(node);
+    }
+
     if (node.type === 'text') {
       return node.content;
     }

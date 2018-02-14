@@ -83,7 +83,7 @@ const nodes = parse('<h1>Hello world</h1>', parse.parseDefaults, function (node)
 
 Gives:
 
-```
+```js
 [{
   type: 'element',
   tagName: 'h1',
@@ -94,6 +94,23 @@ Gives:
     content: 'Hello world'
   }]
 }]
+```
+
+And before the stringify renders the HTML of the node.
+
+```js
+stringify(parse('<div>some text</div>'), parse.parseDefaults, function (node) {
+  node.attributes.push({
+    key: 'data-something',
+    value: 'someval'
+  })
+})
+```
+
+Gives:
+
+```HTML
+<div data-something="someval">some text</div>
 ```
 
 ## Features

@@ -24,6 +24,23 @@ test('parser() should return nodes', t => {
   }])
 })
 
+test('parser() callback will add another item to the object', t => {
+  const str = '<h1>Hello world</h1>'
+  const nodes = parse(str, parse.parseDefaults, function (node) {
+    node['newItem'] = 'newValue'
+  })
+  t.deepEqual(nodes, [{
+    type: 'element',
+    tagName: 'h1',
+    newItem: 'newValue',
+    attributes: [],
+    children: [{
+      type: 'text',
+      content: 'Hello world'
+    }]
+  }])
+})
+
 test('parser() should return script tag content', t => {
   const str = `<div>Hello world<script>console.log('Some inline text')</script></div>`
   const nodes = parse(str)

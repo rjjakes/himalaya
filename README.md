@@ -71,6 +71,31 @@ Himalaya bundles well with Browersify and Webpack.
 
 *Note:* In this example, text nodes consisting of whitespace are not shown for readability.
 
+## Callbacks
+
+It's possible to manipulate the node as as it's added to the JS object.
+ 
+```js
+const nodes = parse('<h1>Hello world</h1>', parse.parseDefaults, function (node) {
+    node['newItem'] = 'newValue'
+  })
+```
+
+Gives:
+
+```
+[{
+  type: 'element',
+  tagName: 'h1',
+  newItem: 'newValue',
+  attributes: [],
+  children: [{
+    type: 'text',
+    content: 'Hello world'
+  }]
+}]
+```
+
 ## Features
 
 ### Synchronous

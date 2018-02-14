@@ -57,45 +57,6 @@ function arrayIncludes(array, searchElement, position) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.splitHead = splitHead;
-exports.unquote = unquote;
-exports.format = format;
-function splitHead(str, sep) {
-  var idx = str.indexOf(sep);
-  if (idx === -1) return [str];
-  return [str.slice(0, idx), str.slice(idx + sep.length)];
-}
-
-function unquote(str) {
-  var car = str.charAt(0);
-  var end = str.length - 1;
-  var isQuoteStart = car === '"' || car === "'";
-  if (isQuoteStart && car === str.charAt(end)) {
-    return str.slice(1, end);
-  }
-  return str;
-}
-
-function format(nodes) {
-  return nodes.map(function (node) {
-    var type = node.type;
-    if (type === 'element') {
-      var tagName = node.tagName; // .toLowerCase()
-      var attributes = node.attributes;
-      var children = format(node.children);
-      return { type: type, tagName: tagName, attributes: attributes, children: children };
-    }
-
-    return { type: type, content: node.content };
-  });
-}
-
-},{}],3:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.parseDefaults = undefined;
 exports.parse = parse;
 exports.stringify = stringify;
@@ -108,14 +69,13 @@ var _parser = require('./parser');
 
 var _parser2 = _interopRequireDefault(_parser);
 
-var _format = require('./format');
-
 var _stringify = require('./stringify');
 
 var _tags = require('./tags');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+// import {format} from './format'
 var parseDefaults = exports.parseDefaults = {
   voidTags: _tags.voidTags,
   closingTags: _tags.closingTags,
@@ -125,10 +85,11 @@ var parseDefaults = exports.parseDefaults = {
 
 function parse(str) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : parseDefaults;
+  var elementCallback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
   var tokens = (0, _lexer2.default)(str, options);
-  var nodes = (0, _parser2.default)(tokens, options);
-  return (0, _format.format)(nodes, options);
+  return (0, _parser2.default)(tokens, options, elementCallback);
+  // return format(nodes, options)
 }
 
 function stringify(ast) {
@@ -138,7 +99,7 @@ function stringify(ast) {
   return (0, _stringify.toHTML)(ast, options, elementCallback);
 }
 
-},{"./format":2,"./lexer":4,"./parser":6,"./stringify":7,"./tags":8}],4:[function(require,module,exports){
+},{"./lexer":3,"./parser":5,"./stringify":6,"./tags":7}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -422,7 +383,7 @@ function lexSkipTag(tagName, state) {
   }
 }
 
-},{"./compat":1}],5:[function(require,module,exports){
+},{"./compat":1}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -532,7 +493,7 @@ exports.default = function (str) {
   return pairedAttributes;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -553,10 +514,10 @@ var _compat = require('./compat');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function parser(tokens, options) {
+function parser(tokens, options, elementCallback) {
   var root = { tagName: null, children: [] };
   var state = { tokens: tokens, options: options, cursor: 0, stack: [root] };
-  parse(state);
+  parse(state, elementCallback);
   return root.children;
 }
 
@@ -578,7 +539,7 @@ function hasTerminalParent(tagName, stack, terminals) {
   return false;
 }
 
-function parse(state) {
+function parse(state, elementCallback) {
   var tokens = state.tokens,
       options = state.options;
   var stack = state.stack;
@@ -653,25 +614,31 @@ function parse(state) {
 
     cursor++;
     var children = [];
-    nodes.push({
+
+    var nodeObject = {
       type: 'element',
       tagName: tagToken.content,
       attributes: attributes,
       children: children
-    });
+
+      // If defined, process the object with the callback function.
+    };if (typeof elementCallback === 'function') {
+      elementCallback(nodeObject);
+    }
+    nodes.push(nodeObject);
 
     var hasChildren = !(attrToken.close || (0, _compat.arrayIncludes)(options.voidTags, tagName));
     if (hasChildren) {
       stack.push({ tagName: tagName, children: children });
       var innerState = { tokens: tokens, options: options, cursor: cursor, stack: stack };
-      parse(innerState);
+      parse(innerState, elementCallback);
       cursor = innerState.cursor;
     }
   }
   state.cursor = cursor;
 }
 
-},{"./compat":1,"./parse-attributes":5}],7:[function(require,module,exports){
+},{"./compat":1,"./parse-attributes":4}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -715,7 +682,7 @@ function toHTML(tree, options, elementCallback) {
 
 exports.default = { toHTML: toHTML };
 
-},{"./compat":1}],8:[function(require,module,exports){
+},{"./compat":1}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -756,6 +723,6 @@ var closingTagAncestorBreakers = exports.closingTagAncestorBreakers = {
   */
 };var voidTags = exports.voidTags = ['!doctype', 'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 
-},{}]},{},[3])(3)
+},{}]},{},[2])(2)
 });
 //# sourceMappingURL=himalaya.js.map

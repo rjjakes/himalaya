@@ -1,10 +1,10 @@
 import AttParser from './parse-attributes'
 import {arrayIncludes} from './compat'
 
-export default function parser (tokens, options) {
+export default function parser (tokens, options, elementCallback) {
   const root = {tagName: null, children: []}
   const state = {tokens, options, cursor: 0, stack: [root]}
-  parse(state)
+  parse(state, elementCallback)
   return root.children
 }
 
@@ -26,7 +26,7 @@ export function hasTerminalParent (tagName, stack, terminals) {
   return false
 }
 
-export function parse (state) {
+export function parse (state, elementCallback) {
   const {tokens, options} = state
   let {stack} = state
   let nodes = stack[stack.length - 1].children
@@ -97,18 +97,25 @@ export function parse (state) {
 
     cursor++
     const children = []
-    nodes.push({
+
+    let nodeObject = {
       type: 'element',
       tagName: tagToken.content,
       attributes,
       children
-    })
+    }
+
+    // If defined, process the object with the callback function.
+    if (typeof elementCallback === 'function') {
+      elementCallback(nodeObject)
+    }
+    nodes.push(nodeObject)
 
     const hasChildren = !(attrToken.close || arrayIncludes(options.voidTags, tagName))
     if (hasChildren) {
       stack.push({tagName, children})
       const innerState = {tokens, options, cursor, stack}
-      parse(innerState)
+      parse(innerState, elementCallback)
       cursor = innerState.cursor
     }
   }

@@ -98,6 +98,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.parseDefaults = undefined;
 exports.parse = parse;
+exports.stringify = stringify;
 
 var _lexer = require('./lexer');
 
@@ -108,6 +109,8 @@ var _parser = require('./parser');
 var _parser2 = _interopRequireDefault(_parser);
 
 var _format = require('./format');
+
+var _stringify = require('./stringify');
 
 var _tags = require('./tags');
 
@@ -128,7 +131,13 @@ function parse(str) {
   return (0, _format.format)(nodes, options);
 }
 
-},{"./format":2,"./lexer":4,"./parser":6,"./tags":7}],4:[function(require,module,exports){
+function stringify(ast) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : parseDefaults;
+
+  return (0, _stringify.toHTML)(ast, options);
+}
+
+},{"./format":2,"./lexer":4,"./parser":6,"./stringify":7,"./tags":8}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -662,6 +671,50 @@ function parse(state) {
 }
 
 },{"./compat":1,"./parse-attributes":5}],7:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.formatAttributes = formatAttributes;
+exports.toHTML = toHTML;
+
+var _compat = require('./compat');
+
+function formatAttributes(attributes) {
+  return attributes.reduce(function (attrs, attribute) {
+    var key = attribute.key,
+        value = attribute.value;
+
+    if (value === null) {
+      return attrs + ' ' + key;
+    }
+    var quoteEscape = value.indexOf('\'') !== -1;
+    var quote = quoteEscape ? '"' : '\'';
+    return attrs + ' ' + key + '=' + quote + value + quote;
+  }, '');
+}
+
+function toHTML(tree, options) {
+  return tree.map(function (node) {
+    if (node.type === 'text') {
+      return node.content;
+    }
+    if (node.type === 'comment') {
+      return '<!--' + node.content + '-->';
+    }
+    var tagName = node.tagName,
+        attributes = node.attributes,
+        children = node.children;
+
+    var isSelfClosing = (0, _compat.arrayIncludes)(options.voidTags, tagName.toLowerCase());
+    return isSelfClosing ? '<' + tagName + formatAttributes(attributes) + '>' : '<' + tagName + formatAttributes(attributes) + '>' + toHTML(children, options) + '</' + tagName + '>';
+  }).join('');
+}
+
+exports.default = { toHTML: toHTML };
+
+},{"./compat":1}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

@@ -80,7 +80,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/andrejewski/himalaya.git"
+    "url": "https://github.com/rjjakes/himalaya.git"
   },
   "scripts": {
     "build": "gulp build",
@@ -88,7 +88,7 @@
     "himalaya": "./bin/himalaya.js",
     "prepublish": "npm test && npm run build",
     "report": "NODE_ENV=nyc nyc npm test",
-    "test": "fixpack && standard --fix && gulp --silent && ava",
+    "test": "gulp --silent && ava",
     "test-ci": "npm run prepublish"
   },
   "standard": {

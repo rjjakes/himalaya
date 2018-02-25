@@ -681,7 +681,7 @@ function toHTML(tree, options, elementCallback) {
         children = node.children;
 
     var isSelfClosing = (0, _compat.arrayIncludes)(options.voidTags, tagName.toLowerCase());
-    return isSelfClosing ? '<' + tagName + formatAttributes(attributes) + '>' : '<' + tagName + formatAttributes(attributes) + '>' + toHTML(children, options) + '</' + tagName + '>';
+    return isSelfClosing ? '<' + tagName + formatAttributes(attributes) + '>' : '<' + tagName + formatAttributes(attributes) + '>' + toHTML(children, options, elementCallback) + '</' + tagName + '>';
   }).join('');
 }
 

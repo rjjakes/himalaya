@@ -29,7 +29,7 @@ export function toHTML (tree, options, elementCallback) {
     const isSelfClosing = arrayIncludes(options.voidTags, tagName.toLowerCase())
     return isSelfClosing
       ? `<${tagName}${formatAttributes(attributes)}>`
-      : `<${tagName}${formatAttributes(attributes)}>${toHTML(children, options)}</${tagName}>`
+      : `<${tagName}${formatAttributes(attributes)}>${toHTML(children, options, elementCallback)}</${tagName}>`
   }).join('')
 }
 

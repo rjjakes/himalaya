@@ -13,15 +13,26 @@ test('stringify() should handle simple conversions', t => {
   t.is(stringify(parse(str3)), str3)
 })
 
-test('stringify() should process a passed callback', t => {
-  const str1 = '<div>some text</div>'
+test('stringify() should read additional object keys in child elements', t => {
+  const str1 = '<div><div><div></div></div></div>'
 
-  t.is(stringify(parse(str1), parse.parseDefaults, function (node) {
-    node.attributes.push({
-      key: 'data-something',
-      value: 'someval'
-    })
-  }), "<div data-something='someval'>some text</div>")
+  let count = 1
+
+  const parsedObject = parse(str1, parse.parseDefaults, function (node) {
+    node['someKey'] = count++
+  })
+
+  const stringified = stringify(parsedObject, parse.parseDefaults, function (node) {
+    if (typeof node.attributes !== 'undefined') {
+      node.attributes.push({
+        key: 'data-key',
+        value: node.someKey.toString()
+      })
+    }
+
+  })
+
+  t.is(stringified, "<div data-key='1'><div data-key='2'><div data-key='3'></div></div></div>")
 })
 
 test('stringify() should work for void elements', t => {
